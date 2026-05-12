@@ -1,0 +1,380 @@
+@page "/Blog/Table2Demo"
+@using System.Collections.Generic
+@using System.Linq
+
+<PageTitle>Table2 虚拟演示</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <strong>InputTable2 / AllocTable2 虚拟演示</strong>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        这个页面只使用本地虚拟数据，不引用数据库。
+                        目的是让你快速看到 <code>InputTable2</code> 和 <code>AllocTable2</code> 的使用语义和交互结果。
+                    </p>
+                    <ul class="mb-0">
+                        <li><strong>InputTable2</strong>：单选或多选关联对象</li>
+                        <li><strong>AllocTable2</strong>：把一批子对象分配到主对象下面</li>
+                        <li><strong>虚拟数据</strong>：页面刷新后仍然保留，不依赖后端表</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <strong>虚拟数据概览</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="text-muted">随笔：</span>
+                        <strong>@articles.Count</strong>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted">标签：</span>
+                        <strong>@tags.Count</strong>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted">收藏集：</span>
+                        <strong>@collections.Count</strong>
+                    </div>
+                    <div class="alert alert-light border mt-3 mb-0">
+                        下面的勾选和切换都只在当前页面内生效，适合做教程演示或截图说明。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-8 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <strong>当前结果</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-4">
+                        <div class="col">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <div class="fw-bold mb-2">InputTable2 单选</div>
+                                <div class="small text-muted mb-1">@FormatArticle(selectedArticle)</div>
+                                <div class="small">主键：@selectedArticleId</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <div class="fw-bold mb-2">InputTable2 多选</div>
+                                <div class="small text-muted mb-1">@FormatArticles(selectedArticles)</div>
+                                <div class="small">数量：@selectedArticles.Count</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <div class="fw-bold mb-2">AllocTable2 主对象</div>
+                                <div class="small text-muted mb-1">@FormatCollection(selectedCollection)</div>
+                                <div class="small">已分配文章：@allocArticleIds.Count</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 bg-light rounded border h-100">
+                                <div class="fw-bold mb-2">分配结果</div>
+                                <div class="small text-muted mb-1">@FormatArticles(articles.Where(a => allocArticleIds.Contains(a.Id)).ToList())</div>
+                                <div class="small">当前主对象下可见的文章数量：@articles.Count(a => allocArticleIds.Contains(a.Id))</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <strong>InputTable2 单选演示</strong>
+                    <span class="text-muted small">点击一条随笔作为当前值</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>选择</th>
+                                    <th>标题</th>
+                                    <th>分类</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var article in articles)
+                                {
+                                    <tr class="@(selectedArticleId == article.Id ? "table-primary" : string.Empty)">
+                                        <td>
+                                            <button type="button" class="btn btn-outline-primary btn-xs" @onclick="() => SelectSingleArticle(article)">选中</button>
+                                        </td>
+                                        <td>[@article.Id] @article.Title</td>
+                                        <td>@article.Category</td>
+                                        <td>@article.Status</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="small text-muted">当前单选结果：@FormatArticle(selectedArticle)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <strong>InputTable2 多选演示</strong>
+                    <span class="text-muted small">点击勾选多个随笔</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>选择</th>
+                                    <th>标题</th>
+                                    <th>标签数量</th>
+                                    <th>创建时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var article in articles)
+                                {
+                                    <tr class="@(selectedArticleIds.Contains(article.Id) ? "table-success" : string.Empty)">
+                                        <td>
+                                            <input type="checkbox" class="form-check-input" checked="@selectedArticleIds.Contains(article.Id)" @onchange="() => ToggleMultiArticle(article.Id)" />
+                                        </td>
+                                        <td>[@article.Id] @article.Title</td>
+                                        <td>@article.TagNames.Count</td>
+                                        <td>@article.CreatedTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="small text-muted">当前多选结果：@FormatArticles(selectedArticles)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mb-3">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <strong>AllocTable2 虚拟分配演示</strong>
+                    <span class="text-muted small">先选主对象，再分配文章</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3 row-cols-1 row-cols-md-2 row-cols-lg-4">
+                        @foreach (var collection in collections)
+                        {
+                            <div class="col">
+                                <div class="border rounded p-3 h-100 @(selectedCollectionId == collection.Id ? "border-primary bg-light" : string.Empty)">
+                                    <div class="fw-bold mb-2">@collection.Name</div>
+                                    <div class="small text-muted mb-2">@collection.Remark</div>
+                                    <div class="small mb-3">当前挂载：@collection.ArticleIds.Count 篇</div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => SelectCollection(collection)">设为主对象</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (selectedCollection is not null)
+                    {
+                        <div class="alert alert-warning">
+                            当前主对象：<strong>@selectedCollection.Name</strong>。勾选下面的文章后，点击“保存分配”即可更新本页虚拟关系。
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>分配</th>
+                                        <th>标题</th>
+                                        <th>分类</th>
+                                        <th>频道</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var article in articles)
+                                    {
+                                        <tr class="@(allocArticleIds.Contains(article.Id) ? "table-info" : string.Empty)">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input" checked="@allocArticleIds.Contains(article.Id)" @onchange="() => ToggleAllocArticle(article.Id)" />
+                                            </td>
+                                            <td>[@article.Id] @article.Title</td>
+                                            <td>@article.Category</td>
+                                            <td>@article.Channel</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary" @onclick="SaveAllocation">保存分配</button>
+                            <button type="button" class="btn btn-outline-secondary" @onclick="ResetAllocation">重置分配</button>
+                        </div>
+                        <div class="small text-muted mt-3">当前分配：@FormatArticles(articles.Where(a => allocArticleIds.Contains(a.Id)).ToList())</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly List<DemoArticle> articles = new()
+    {
+        new DemoArticle(1, "Blazor 入门笔记", "基础", "已发布", "前端", new[] { "Blazor", "入门" }),
+        new DemoArticle(2, "Table2 选择器演示", "教程", "草稿", "组件", new[] { "Table", "选择" }),
+        new DemoArticle(3, "列表页设计思路", "教程", "已发布", "UI", new[] { "布局", "导航" }),
+        new DemoArticle(4, "关系分配器使用场景", "架构", "已发布", "后台", new[] { "分配", "保存" }),
+        new DemoArticle(5, "虚拟数据如何组织", "笔记", "草稿", "数据", new[] { "Mock", "Demo" })
+    };
+
+    private readonly List<DemoCollection> collections = new()
+    {
+        new DemoCollection(101, "入门收藏集", "适合做新手示例", new long[] { 1, 2 }),
+        new DemoCollection(102, "教程收藏集", "偏说明文档和流程图", new long[] { 2, 3 }),
+        new DemoCollection(103, "管理收藏集", "偏后台关系维护", new long[] { 3, 4 }),
+        new DemoCollection(104, "数据收藏集", "偏虚拟数据与 Mock", new long[] { 4, 5 })
+    };
+
+    private readonly List<DemoTag> tags = new()
+    {
+        new DemoTag(11, "Blazor"),
+        new DemoTag(12, "Table"),
+        new DemoTag(13, "教程"),
+        new DemoTag(14, "后台")
+    };
+
+    private long selectedArticleId = 1;
+    private readonly HashSet<long> selectedArticleIds = new() { 1, 2, 3 };
+    private long selectedCollectionId = 101;
+    private readonly HashSet<long> allocArticleIds = new() { 1, 2 };
+
+    private DemoArticle? selectedArticle => articles.FirstOrDefault(a => a.Id == selectedArticleId);
+    private List<DemoArticle> selectedArticles => articles.Where(a => selectedArticleIds.Contains(a.Id)).ToList();
+    private DemoCollection? selectedCollection => collections.FirstOrDefault(a => a.Id == selectedCollectionId);
+
+    private void SelectSingleArticle(DemoArticle article)
+    {
+        selectedArticleId = article.Id;
+    }
+
+    private void ToggleMultiArticle(long id)
+    {
+        if (!selectedArticleIds.Add(id))
+        {
+            selectedArticleIds.Remove(id);
+        }
+    }
+
+    private void SelectCollection(DemoCollection collection)
+    {
+        selectedCollectionId = collection.Id;
+        allocArticleIds.Clear();
+        foreach (var id in collection.ArticleIds)
+        {
+            allocArticleIds.Add(id);
+        }
+    }
+
+    private void ToggleAllocArticle(long id)
+    {
+        if (!allocArticleIds.Add(id))
+        {
+            allocArticleIds.Remove(id);
+        }
+    }
+
+    private void SaveAllocation()
+    {
+        var collection = selectedCollection;
+        if (collection is null)
+        {
+            return;
+        }
+
+        collection.ArticleIds = allocArticleIds.OrderBy(a => a).ToList();
+    }
+
+    private void ResetAllocation()
+    {
+        var collection = selectedCollection;
+        if (collection is null)
+        {
+            return;
+        }
+
+        allocArticleIds.Clear();
+        foreach (var id in collection.ArticleIds)
+        {
+            allocArticleIds.Add(id);
+        }
+    }
+
+    private static string FormatArticle(DemoArticle? article)
+        => article is null ? "未选择" : $"[{article.Id}] {article.Title}";
+
+    private static string FormatArticles(List<DemoArticle> items)
+        => items.Count == 0 ? "未选择" : string.Join("、", items.Select(a => $"[{a.Id}] {a.Title}"));
+
+    private static string FormatCollection(DemoCollection? collection)
+        => collection is null ? "未选择" : $"[{collection.Id}] {collection.Name}";
+
+    private sealed class DemoArticle
+    {
+        public DemoArticle(long id, string title, string category, string status, string channel, IEnumerable<string> tagNames)
+        {
+            Id = id;
+            Title = title;
+            Category = category;
+            Status = status;
+            Channel = channel;
+            TagNames = tagNames.ToList();
+            CreatedTime = DateTime.Now.AddDays(-id * 2);
+        }
+
+        public long Id { get; }
+        public string Title { get; }
+        public string Category { get; }
+        public string Status { get; }
+        public string Channel { get; }
+        public List<string> TagNames { get; }
+        public DateTime CreatedTime { get; }
+    }
+
+    private sealed class DemoCollection
+    {
+        public DemoCollection(long id, string name, string remark, IEnumerable<long> articleIds)
+        {
+            Id = id;
+            Name = name;
+            Remark = remark;
+            ArticleIds = articleIds.ToList();
+        }
+
+        public long Id { get; }
+        public string Name { get; }
+        public string Remark { get; }
+        public List<long> ArticleIds { get; set; }
+    }
+
+    private sealed class DemoTag
+    {
+        public DemoTag(long id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
+
+        public long Id { get; }
+        public string Name { get; }
+    }
+}

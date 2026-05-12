@@ -1,0 +1,80 @@
+@page "/Blog/DictParamDemo"
+@inject Microsoft.Extensions.Logging.ILogger<DictParamDemo> Logger
+
+<PageTitle>字典和参数配置演示</PageTitle>
+
+<div class="p-4" style="color: #1f2937;">
+    <h1 class="h3 mb-2" style="color: #172033;">NovaAdmin</h1>
+    <p class="mb-0" style="color: #5f6b7a;">首页演示内容已迁移到这里，菜单入口请从“组件演示”进入。</p>
+
+    <div class="row g-3 mt-3 align-items-start" style="max-width: 1120px;">
+        <div class="col-12 col-xl-6">
+            <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #f7fbfb 100%); border-radius: 16px;">
+                <div class="card-body p-3">
+                    <h2 class="h5 mb-3" style="color: #153b3f;">字典快速演示</h2>
+                    <p class="small mb-3" style="color: #60717c; line-height: 1.6;">
+                        字典分类使用 <code>Gender</code>，可在 <code>/Admin/Dict</code> 中直接维护。
+                    </p>
+
+                    <div class="form-group rounded-3 p-3" style="background-color: #edf6f5; border: 1px solid #d7e9e6;">
+                        <label class="form-label mb-2" style="color: #244b50; font-weight: 600;">性别字典</label>
+                        <SelectDict ParentName="Gender" @bind-Value="selectedGender" OnValueChanged="OnGenderChanged" />
+                    </div>
+
+                    <div class="mt-2 small" style="color: #6b7280;">
+                        当前选中值：
+                        <span class="fw-semibold" style="color: #0f3d46;">@(string.IsNullOrWhiteSpace(selectedGender) ? "未选择" : selectedGender)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #f9f7f2 100%); border-radius: 16px;">
+                <div class="card-body p-3">
+                    <h2 class="h5 mb-3" style="color: #4a3520;">参数配置演示</h2>
+                    <p class="small mb-3" style="color: #786a5d; line-height: 1.6;">
+                        参数编码使用 <code>Home_ContactCard</code>，当前卡片通过 <code>ParamText</code> 读取 <code>Value</code>、<code>Value2</code>、<code>Value3</code>。
+                    </p>
+
+                    <div class="rounded-3 p-3" style="background-color: #f6f2ea; border: 1px dashed #d7c4a1;">
+                        <div class="small mb-1" style="color: #8a6b3d;">当前参数编码</div>
+                        <div class="fw-semibold" style="color: #3b2c18;">Home_ContactCard</div>
+
+                        <div class="mt-3 small mb-1" style="color: #8a6b3d;">标题</div>
+                        <ParamText ParamId="Home_ContactCard" Field="@nameof(SysParam.Value)" DefaultText="未配置" TagName="div" Style="color: #2c241b;" />
+
+                        <div class="mt-3 small mb-1" style="color: #8a6b3d;">正文</div>
+                        <ParamText ParamId="Home_ContactCard" Field="@nameof(SysParam.Value2)" DefaultText="未配置，请到 /Admin/Param 新增 Home_ContactCard 参数。" TagName="div" Style="color: #4b5563; line-height: 1.8;" />
+
+                        <div class="mt-3 small mb-1" style="color: #8a6b3d;">联系电话</div>
+                        <ParamText ParamId="Home_ContactCard" Field="@nameof(SysParam.Value3)" DefaultText="未配置" TagName="div" Class="fw-semibold" Style="color: #7c5a20;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string selectedGender = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        Logger.LogInformation("DictParamDemo page initialized.");
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Logger.LogInformation("DictParamDemo page rendered for the first time.");
+        }
+    }
+
+    private Task OnGenderChanged(string value)
+    {
+        Logger.LogInformation("DictParamDemo dictionary changed. ParentName=Gender, Value={Value}", value);
+        return Task.CompletedTask;
+    }
+}

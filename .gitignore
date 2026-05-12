@@ -1,0 +1,20 @@
+# Build outputs
+bin/
+obj/
+
+# IDE / OS
+.vscode/
+.DS_Store
+
+# Runtime / logs
+Logs/
+*.log
+*.tmp
+*.swp
+*.db-journal
+*.sqlite-journal
+*.db-wal
+*.db-shm
+
+# Local app/runtime artifacts
+novaadmin.db-journal

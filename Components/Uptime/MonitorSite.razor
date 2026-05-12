@@ -1,0 +1,148 @@
+@page "/Uptime/MonitorSite"
+@using UptimeSite = LinCms.Entities.Uptime.MonitorSite
+@inject Microsoft.Extensions.Logging.ILogger<MonitorSite> Logger
+
+<PageTitle>监控站点</PageTitle>
+
+<AdminTable2 TItem="UptimeSite" Context="item" PageSize="20" Title="监控站点"
+             DialogClassName="modal-xl"
+             IsNotifyChanged="true"
+             OnQuery="OnQuery" InitQuery="InitQuery" OnEdit="OnEdit">
+    <TableHeader>
+        <th>站点名称</th>
+        <th>站点地址</th>
+        <th>启用</th>
+        <th>检查间隔(秒)</th>
+        <th>失败阈值</th>
+        <th>关键字</th>
+        <th>最近状态</th>
+        <th>Ping</th>
+        <th>Http</th>
+        <th>SSL</th>
+        <th>最近检查时间</th>
+        <th>创建时间</th>
+    </TableHeader>
+    <TableRow>
+        <td>@item.Name</td>
+        <td>
+            <a href="@item.Url" target="_blank" rel="noopener noreferrer">@item.Url</a>
+        </td>
+        <td>
+            <span class="badge @(item.IsEnabled ? "bg-success" : "bg-secondary")">@(item.IsEnabled ? "启用" : "停用")</span>
+        </td>
+        <td>@item.CheckIntervalSeconds</td>
+        <td>@item.FailureThreshold</td>
+        <td>@item.Keywords</td>
+        <td>
+            <span class="badge @(item.LastStatus == "Up" ? "bg-success" : item.LastStatus == "Down" ? "bg-danger" : "bg-secondary")">@GetStatusText(item.LastStatus)</span>
+        </td>
+        <td>@item.PingStatus</td>
+        <td>@item.HttpStatus</td>
+        <td>@item.SslStatus</td>
+        <td>@item.LastCheckTime?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+        <td>@item?.CreatedTime?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+    </TableRow>
+    <EditTemplate>
+        <div class="row form-inline form-inline-end">
+            <div class="form-group col-6">
+                <label class="form-label">站点名称</label>
+                <input @bind="item.Name" type="text" class="form-control" maxlength="100" placeholder="请输入站点名称">
+            </div>
+            <div class="form-group col-6">
+                <label class="form-label">站点地址</label>
+                <input @bind="item.Url" type="text" class="form-control" maxlength="400" placeholder="https://example.com">
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">启用</label>
+                <Switch @bind-Value="item.IsEnabled" OnColor="Color.Success" />
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">检查间隔(秒)</label>
+                <input @bind="item.CheckIntervalSeconds" type="number" class="form-control">
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">失败阈值</label>
+                <input @bind="item.FailureThreshold" type="number" class="form-control">
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">排序</label>
+                <input @bind="item.SortCode" type="number" class="form-control">
+            </div>
+            <div class="form-group col-12">
+                <label class="form-label">关键字检测内容</label>
+                <textarea @bind="item.Keywords" class="form-control" maxlength="500" rows="3" placeholder="可填写需要检测的关键字"></textarea>
+            </div>
+            <div class="form-group col-12">
+                <label class="form-label">备注</label>
+                <textarea @bind="item.Remark" class="form-control" maxlength="500" rows="3"></textarea>
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">最近状态</label>
+                <input value="@item.LastStatus" type="text" class="form-control" disabled>
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">Ping 状态</label>
+                <input value="@item.PingStatus" type="text" class="form-control" disabled>
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">Http 状态</label>
+                <input value="@item.HttpStatus" type="text" class="form-control" disabled>
+            </div>
+            <div class="form-group col-3">
+                <label class="form-label">SSL 状态</label>
+                <input value="@item.SslStatus" type="text" class="form-control" disabled>
+            </div>
+            <div class="form-group col-4">
+                <label class="form-label">最近检查时间</label>
+                <input value="@item.LastCheckTime?.ToString("yyyy-MM-dd HH:mm:ss")" type="text" class="form-control" disabled>
+            </div>
+            <div class="form-group col-4">
+                <label class="form-label">最近响应时间(ms)</label>
+                <input value="@item.LastResponseTimeMs?.ToString()" type="text" class="form-control" disabled>
+            </div>
+            <div class="form-group col-4">
+                <label class="form-label">SSL 剩余天数</label>
+                <input value="@item.SslDaysLeft?.ToString()" type="text" class="form-control" disabled>
+            </div>
+        </div>
+    </EditTemplate>
+</AdminTable2>
+
+@code {
+    [Inject] IAggregateRootRepository<UptimeSite> repo { get; set; }
+
+    async Task InitQuery(AdminQueryInfo e)
+    {
+        Logger.LogInformation("MonitorSite page query initialized.");
+        e.Filters = new AdminFilterInfo[]
+        {
+        };
+        await Task.Yield();
+    }
+
+    void OnQuery(AdminQueryEventArgs<UptimeSite> e)
+    {
+        e.Select.WhereIf(!e.SearchText.IsNull(), a => a.Name.Contains(e.SearchText) ||
+                a.Url.Contains(e.SearchText) ||
+                a.Keywords.Contains(e.SearchText) ||
+                a.Remark.Contains(e.SearchText))
+            .OrderBy(a => a.SortCode);
+    }
+
+    async Task OnEdit(UptimeSite item)
+    {
+        Logger.LogInformation("Editing monitor site. Id={SiteId}, Name={Name}, Url={Url}", item.Id, item.Name, item.Url);
+        await Task.Yield();
+    }
+
+    private static string GetStatusText(string? status)
+    {
+        return status switch
+        {
+            "Up" => "正常",
+            "Down" => "异常",
+            "NotApplicable" => "无需检测",
+            _ => "未知"
+        };
+    }
+}

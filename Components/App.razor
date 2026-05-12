@@ -1,0 +1,43 @@
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link href="_content/NovaAdmin.Blazor/novaadmin.css?v2_5_4" rel="stylesheet" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <link rel="icon" href="@(admin.Tenant?.Logo ?? "logo.png")" type="image/png" />
+    <HeadOutlet @rendermode="@InteractiveServer" />
+
+    <style type="text/css">
+        :root {
+            --bb-border-focus-color: #86b7fe;
+            --bb-border-hover-color: #86b7fe;
+            --bb-height: 35px;
+            --bb-dropdown-max-height: 274px;
+            --bb-shadow: 0 0 8px 0 rgba(232, 237, 250, .6), 0 2px 4px 0 rgba(232, 237, 250, .5019607843);
+            --bb-hover-shadow: 0 1px 7px 0 rgba(0, 0, 0, .0509803922), 0 2px 8px 0 rgba(0, 0, 0, .0705882353), 0 3px 9px 0 rgba(0, 0, 0, .0588235294), 0 5px 10px 0 rgba(0, 0, 0, .031372549);
+            --bb-font-size: 14px;
+            --bb-row-control-padding: 1px;
+            --bs-border-radius: 3px;
+            --lte-sidebar-width: 200px;
+            --main-color-primary: #205656;
+            --main-color-light: #ccdfdf;
+            --main-color-secondary: #1D3A3A;
+        }
+    </style>
+</head>
+
+<body>
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+
+    <script src="_content/NovaAdmin.Blazor/novaadmin.js?v2_5_4"></script>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    [Inject] AdminContext admin { get; set; } = null!;
+}
