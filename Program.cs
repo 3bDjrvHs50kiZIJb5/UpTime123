@@ -24,7 +24,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddHostedService<MonitorSitePollingService>();
 builder.Services.AddSingleton<TelegramNotifier>();
-builder.Services.AddHostedService<TelegramChatBotService>();
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHostedService<TelegramChatBotService>();
+}
 
 var app = builder.Build();
 
