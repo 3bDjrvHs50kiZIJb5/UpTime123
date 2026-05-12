@@ -16,5 +16,9 @@ Logs/
 *.db-wal
 *.db-shm
 
+# Local secrets / data
+appsettings.json
+novaadmin.db
+
 # Local app/runtime artifacts
 novaadmin.db-journal
